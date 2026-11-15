@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#050807">
+<title>BLACKBOX | محاكاة أمنية</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Share+Tech+Mono&display=swap');
+:root{--green:#00ff83;--red:#ff334f;--muted:#8a9b91;--bg:#050807}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 50% 0%,#10231a 0%,#050807 55%);color:#e7fff0;font-family:'Cairo',Tahoma,sans-serif;min-height:100vh;padding:18px;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 3px,#ffffff05 4px);z-index:5}
+.wrap{width:min(900px,100%);margin:22px auto;border:1px solid #1d6a45;background:#07100cdd;box-shadow:0 0 45px #00ff8318;border-radius:12px;overflow:hidden}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 18px;background:#0c1912;border-bottom:1px solid #1c5036}
+.brand{font-family:'Share Tech Mono',monospace;direction:ltr;color:var(--green);letter-spacing:2px;font-size:14px}
+.live{font-size:11px;color:#ff7180}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--red);margin-left:7px;box-shadow:0 0 10px var(--red);animation:pulse 1s infinite}
+.hero{text-align:center;padding:28px 18px 10px}
+.kicker{font-size:12px;color:var(--red);letter-spacing:1px;font-weight:700}
+h1{font-size:clamp(30px,7vw,54px);line-height:1.25;margin:10px 0;color:var(--red);text-shadow:0 0 22px #ff334f66}
+.sub{color:var(--muted);font-size:13px}
+.panel{margin:18px;padding:16px;border:1px solid #17442f;background:#030906;border-radius:8px}
+.panel-title{display:flex;justify-content:space-between;color:var(--green);font-size:12px;margin-bottom:12px}
+#log{height:270px;overflow:hidden;display:flex;flex-direction:column;gap:8px;font-size:13px}
+.entry{animation:appear .35s ease both;line-height:1.8;overflow-wrap:anywhere}
+.entry:before{content:"› ";color:#477c5e}
+.ok{color:#9affc1}.warn{color:#ffd166}.bad{color:#ff687b}.info{color:#c2d6ca}
+.progress-area{margin:18px}
+.progress-head{display:flex;justify-content:space-between;color:#b5c9bc;font-size:12px;margin-bottom:9px}
+.track{height:9px;background:#14251b;border:1px solid #24543a;border-radius:20px;overflow:hidden}
+.bar{height:100%;width:0;background:linear-gradient(90deg,#00a95a,#00ff83);box-shadow:0 0 14px #00ff83;transition:width .45s}
+.percent{text-align:center;color:var(--green);font-family:'Share Tech Mono',monospace;direction:ltr;margin-top:8px;font-size:14px}
+.alert{margin:18px;padding:13px;text-align:center;border:1px solid #a12c3d;background:#260b10;color:#ff8290;border-radius:7px;font-weight:700;display:none;animation:pulse 1.2s infinite}
+.actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;padding:0 18px 20px}
+button{font:700 13px 'Cairo',sans-serif;border:1px solid #26754b;color:var(--green);background:#0b1b12;padding:10px 18px;border-radius:6px;cursor:pointer}
+button:hover{background:#123522}
+.note{text-align:center;color:#718078;font-size:10px;padding:0 16px 18px}
+.reveal{display:none;text-align:center;padding:25px 15px 30px}
+.reveal h2{color:var(--green);font-size:clamp(25px,6vw,40px);margin:5px}
+.reveal p{color:#b5c9bc;font-size:13px}
+.reveal .emoji{font-size:40px}
+@keyframes pulse{50%{opacity:.45}}
+@keyframes appear{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@media(max-width:520px){body{padding:8px}.wrap{margin:8px auto}.panel{margin:12px;padding:12px}#log{height:290px;font-size:12px}.top{padding:11px 12px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="top">
+    <div class="brand">BLACKBOX // 0x7F</div>
+    <div class="live"><span class="dot"></span>تنبيه أمني تجريبي</div>
+  </header>
+
+  <section class="hero" id="hero">
+    <div class="kicker">وحدة المحاكاة الأمنية المتقدمة</div>
+    <h1>تم رصد نشاط غير معتاد</h1>
+    <div class="sub">جارٍ إجراء فحص بصري تجريبي للجهاز والاتصال...</div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-title"><span>سجل العمليات</span><span dir="ltr">LIVE TERMINAL</span></div>
+    <div id="log" aria-live="polite"></div>
+  </section>
+
+  <section class="progress-area">
+    <div class="progress-head"><span>مستوى تقدم المحاكاة</span><span id="phase">تهيئة النظام</span></div>
+    <div class="track"><div class="bar" id="bar"></div></div>
+    <div class="percent" id="percent">0%</div>
+  </section>
+
+  <div class="alert" id="alert">⚠ تم تفعيل حالة الإنذار التجريبية ⚠</div>
+
+  <div class="actions" id="actions">
+    <button id="soundBtn" type="button">تشغيل / إيقاف الصوت</button>
+    <button id="restartBtn" type="button">إعادة المحاكاة</button>
+  </div>
+
+  <section class="reveal" id="reveal">
+    <div class="emoji">😈</div>
+    <h2>لقد وقعت في المقلب!</h2>
+    <p>اطمئن، لم يتم اختراق جهازك أو الوصول إلى ملفاتك أو بياناتك.<br>كانت هذه مجرد محاكاة بصرية للمزاح ❤️</p>
+    <button type="button" onclick="restart()">شغّل المقلب مرة أخرى</button>
+  </section>
+
+  <footer class="note">محاكاة ترفيهية فقط — لا يتم تنفيذ أي اتصال هجومي أو تعديل على الجهاز</footer>
+</main>
+
+<script>
+const lines = [
+  ["بدء تشغيل وحدة الفحص التجريبية...", "ok", "تهيئة النظام"],
+  ["إنشاء جلسة تحليل محلية للمتصفح...", "info", "تهيئة النظام"],
+  ["قراءة معلومات عامة متاحة للمتصفح...", "ok", "تحليل البيئة"],
+  ["فحص إعدادات العرض ونوع الجهاز...", "info", "تحليل البيئة"],
+  ["تحليل حالة الاتصال الظاهرة للمتصفح...", "ok", "تحليل الشبكة"],
+  ["تحذير: تم رصد نمط اتصال يحتاج إلى مراجعة!", "warn", "تحليل الشبكة"],
+  ["بدء محاكاة فحص نقاط الضعف...", "info", "فحص أمني"],
+  ["جارٍ اختبار طبقات الحماية الافتراضية...", "warn", "فحص أمني"],
+  ["تنبيه: اكتملت مرحلة الفحص التمثيلي!", "bad", "إنذار"],
+  ["تشغيل بروتوكول العزل السينمائي...", "bad", "إنذار"],
+  ["تجهيز التقرير النهائي...", "info", "إنهاء"]
+];
+let timer = null, index = 0, soundOn = false, audioCtx = null;
+const log = document.getElementById('log');
+const bar = document.getElementById('bar');
+const percent = document.getElementById('percent');
+const phase = document.getElementById('phase');
+const alertBox = document.getElementById('alert');
+
+function beep(freq=660, duration=.09){
+  if(!soundOn) return;
+  try{
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const osc=audioCtx.createOscillator(), gain=audioCtx.createGain();
+    osc.frequency.value=freq; osc.type='square';
+    gain.gain.value=.025; osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(); osc.stop(audioCtx.currentTime+duration);
+  }catch(e){}
+}
+function addLine(text, cls){
+  const el=document.createElement('div');
+  el.className='entry '+cls;
+  el.textContent=text;
+  log.appendChild(el);
+  while(log.children.length>9) log.removeChild(log.firstChild);
+  log.scrollTop=log.scrollHeight;
+}
+function tick(){
+  if(index>=lines.length){
+    bar.style.width='100%'; percent.textContent='100%'; phase.textContent='اكتملت المحاكاة';
+    setTimeout(()=>{
+      document.getElementById('hero').style.display='none';
+      document.querySelector('.panel').style.display='none';
+      document.querySelector('.progress-area').style.display='none';
+      alertBox.style.display='none';
+      document.getElementById('actions').style.display='none';
+      document.getElementById('reveal').style.display='block';
+    },1800);
+    return;
+  }
+  const [message,cls,label]=lines[index];
+  addLine(message,cls);
+  if(index===8) alertBox.style.display='block';
+  index++;
+  const p=Math.round(index/lines.length*100);
+  bar.style.width=p+'%'; percent.textContent=p+'%'; phase.textContent=label;
+  beep(index>7?880:540);
+  timer=setTimeout(tick, index<4?1450:1900);
+}
+function restart(){
+  clearTimeout(timer); index=0; log.innerHTML='';
+  bar.style.width='0%'; percent.textContent='0%'; phase.textContent='تهيئة النظام';
+  alertBox.style.display='none';
+  document.getElementById('hero').style.display='block';
+  document.querySelector('.panel').style.display='block';
+  document.querySelector('.progress-area').style.display='block';
+  document.getElementById('actions').style.display='flex';
+  document.getElementById('reveal').style.display='none';
+  timer=setTimeout(tick,900);
+}
+document.getElementById('restartBtn').addEventListener('click',restart);
+document.getElementById('soundBtn').addEventListener('click',()=>{
+  soundOn=!soundOn;
+  document.getElementById('soundBtn').textContent=soundOn?'إيقاف الصوت':'تشغيل الصوت';
+  if(soundOn) beep(700);
+});
+restart();
+</script>
+</body>
+</html>
